@@ -12,7 +12,7 @@ class UNREALPORTER_API AUnrealPorterPawn : public APawn
 
 	/** StaticMesh component that will be the visuals for our flying pawn */
 	UPROPERTY(Category = Mesh, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		class UStaticMeshComponent* PlaneMesh;
+		class UStaticMeshComponent* SphereVisual;
 
 	/** Spring arm that will offset the camera */
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -32,13 +32,18 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
-
 	void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit);
 
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/** Bound to the thrust axis */
+	void ThrustInput(float Val);
+
+	/** Bound to the vertical axis */
 	void MoveUpInput(float Val);
 
+	/** Bound to the horizontal axis */
 	void MoveRightInput(float Val);
 
 private:
@@ -73,7 +78,7 @@ private:
 
 public:
 	/** Returns PlaneMesh subobject **/
-	FORCEINLINE class UStaticMeshComponent* GetPlaneMesh() const { return PlaneMesh; }
+	FORCEINLINE class UStaticMeshComponent* GetPlaneMesh() const { return SphereVisual; }
 	/** Returns SpringArm subobject **/
 	FORCEINLINE class USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	/** Returns Camera subobject **/

@@ -7,24 +7,26 @@
 // Sets default values
 AUnrealPorterPawn::AUnrealPorterPawn()
 {
-	// Structure to hold one-time initialization
-	struct FConstructorStatics
-	{
-		ConstructorHelpers::FObjectFinderOptional<UStaticMesh> PlaneMesh;
-		FConstructorStatics()
-			: PlaneMesh(TEXT("/Game/Flying/Meshes/UFO.UFO"))
-		{
-		}
-	};
-	static FConstructorStatics ConstructorStatics;
-
 	// Create static mesh component
-	PlaneMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PlaneMesh0"));
-	PlaneMesh->SetStaticMesh(ConstructorStatics.PlaneMesh.Get());
-	RootComponent = PlaneMesh;
+	// Our root component will be a sphere that reacts to physics
+	USphereComponent* SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("RootComponent"));
+	RootComponent = SphereComponent;
+	SphereComponent->InitSphereRadius(40.0f);
+	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
+
+	// Create and position a mesh component so we can see where our sphere is
+	SphereVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualRepresentation"));
+	SphereVisual->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SphereVisualAsset(TEXT("/Engine/BasicShapes/Sphere"));
+	if (SphereVisualAsset.Succeeded())
+	{
+		SphereVisual->SetStaticMesh(SphereVisualAsset.Object);
+		SphereVisual->SetRelativeLocation(FVector(0.0f, 0.0f, -40.0f));
+		SphereVisual->SetWorldScale3D(FVector(0.8f));
+	}
 
 	// Create a spring arm component
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraAttachmentArm"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->TargetArmLength = 160.0f; // The camera follows at this distance behind the character	
 	SpringArm->SocketOffset = FVector(0.f, 0.f, 60.f);
@@ -32,7 +34,7 @@ AUnrealPorterPawn::AUnrealPorterPawn()
 	SpringArm->CameraLagSpeed = 15.f;
 
 	// Create camera component 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("ActualCamera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false; // Don't rotate camera with controller
 
@@ -73,10 +75,14 @@ void AUnrealPorterPawn::Tick( float DeltaSeconds )
 }
 
 // Called to bind functionality to input
-void AUnrealPorterPawn::SetupPlayerInputComponent(class UInputComponent* InputComponent)
+void AUnrealPorterPawn::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(InputComponent);
+	check(PlayerInputComponent);
 
+	// Bind our control axis' to callback functions
+	PlayerInputComponent->BindAxis("Thrust", this, &AUnrealPorterPawn::ThrustInput);
+	PlayerInputComponent->BindAxis("MoveUp", this, &AUnrealPorterPawn::MoveUpInput);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AUnrealPorterPawn::MoveRightInput);
 }
 
 void AUnrealPorterPawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
@@ -86,6 +92,18 @@ void AUnrealPorterPawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActo
 	// Deflect along the surface when we collide.
 	FRotator CurrentRotation = GetActorRotation(RootComponent);
 	SetActorRotation(FQuat::Slerp(CurrentRotation.Quaternion(), HitNormal.ToOrientationQuat(), 0.025f));
+}
+
+void AUnrealPorterPawn::ThrustInput(float Val)
+{
+	// Is there no input?
+	bool bHasInput = !FMath::IsNearlyEqual(Val, 0.f);
+	// If input is not held down, reduce speed
+	float CurrentAcc = bHasInput ? (Val * Acceleration) : (-0.5f * Acceleration);
+	// Calculate new speed
+	float NewForwardSpeed = CurrentForwardSpeed + (GetWorld()->GetDeltaSeconds() * CurrentAcc);
+	// Clamp between MinSpeed and MaxSpeed
+	CurrentForwardSpeed = FMath::Clamp(NewForwardSpeed, MinSpeed, MaxSpeed);
 }
 
 void AUnrealPorterPawn::MoveUpInput(float Val)
