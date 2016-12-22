@@ -2,18 +2,19 @@
 
 #pragma once
 
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "UnrealPorterGameModeBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPORTER_API AUnrealPorterGameModeBase : public AGameModeBase
+class UNREALPORTER_API AUnrealPorterGameModeBase : public AGameMode
 {
 	GENERATED_BODY()
 	
-	
-	
+public:
+		
+	AUnrealPorterGameModeBase();
 	
 };
