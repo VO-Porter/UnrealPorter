@@ -3,28 +3,29 @@
 #pragma once
 
 #include "Networking.h"
-#include "UnrealPorterPawn.h"
 #include "Json.h"
 #include <string>
-#include "GameFramework/PlayerController.h"
+#include "GameFramework/Actor.h"
 #include "UDPPlayerController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPORTER_API AUDPPlayerController : public APlayerController
+class UNREALPORTER_API AUDPPlayerController : public AActor
 {
 	GENERATED_BODY()
 	
 public:
 	AUDPPlayerController(const FObjectInitializer& ObjectInitializer);
 
-	//Called for input
-	void MoveUp(float Value);
+	UFUNCTION(BlueprintImplementableEvent)
+	void Jump();
+
+	UFUNCTION(BlueprintImplementableEvent)
 	void MoveRight(float Value);
 
-	virtual void SetupInputComponent() override;
+
 
 public:
 	FSocket* ListenSocket;
@@ -56,6 +57,9 @@ public:
 
 	/** Called whenever this actor is being removed from a level */
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void BeginPlay() override;
+
 
 public:
 	FString StringFromBinaryArray(const TArray<uint8>& BinaryArray);
