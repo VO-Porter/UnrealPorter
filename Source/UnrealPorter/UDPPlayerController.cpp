@@ -11,39 +11,13 @@ AUDPPlayerController::AUDPPlayerController(const FObjectInitializer& ObjectIniti
 };
 
 
-void AUDPPlayerController::SetupInputComponent() {
-
-	Super::SetupInputComponent();
-
-	check(InputComponent);
-
-	if (InputComponent != NULL)
-	{
-		InputComponent->BindAxis("MoveUp", this, &AUDPPlayerController::MoveUp);
-		InputComponent->BindAxis("MoveRight", this, &AUDPPlayerController::MoveRight);
-	}
-
-	StartUDPReceiver("UDPSocketListener", "127.0.0.1", 8890);
-}
-
-
-void AUDPPlayerController::MoveUp(float Value)
+void AUDPPlayerController::BeginPlay() 
 {
-	if (Value != 0.0f && (GetPawn() != NULL))
-	{
-		// transform to world space and add it
-		(Cast<AUnrealPorterPawn>(GetPawn()))->MoveUpInput(Value);
-	}
+	Super::BeginPlay();
+
+	StartUDPReceiver("UDPSocketListener", "10.129.47.54", 8890);
 }
 
-void AUDPPlayerController::MoveRight(float Value)
-{
-	if (Value != 0.0f && (GetPawn() != NULL))
-	{
-		// transform to world space and add it
-		(Cast<AUnrealPorterPawn>(GetPawn()))->MoveRightInput(Value);
-	}
-}
 
 
 void AUDPPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -117,19 +91,19 @@ void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIP
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonRaw);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
 	{
-		FString val = JsonParsed->GetStringField("move");
+		FString xVal = JsonParsed->GetStringField("x");
+		FString jumpVal = JsonParsed->GetStringField("jump");
 
-		if (val == "1") {
-			MoveRight(1.0);
+		if (xVal != "") {
+			int intVal = FCString::Atoi(*xVal);
+			if (intVal > 100 || intVal < -100) {
+				float val = intVal / 350.f;
+				MoveRight(val);
+			}
 		}
-		else if (val == "2") {
-			MoveRight(-1.0);
-		}
-		else if (val == "3") {
-			MoveUp(1.0);
-		}
-		else if (val == "4") {
-			MoveUp(-1.0);
+		
+		if (jumpVal == "1") {
+			Jump();
 		}
 	}
 }
