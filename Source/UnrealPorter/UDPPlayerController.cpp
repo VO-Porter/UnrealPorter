@@ -80,7 +80,6 @@ bool AUDPPlayerController::StartUDPReceiver(
 void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIPv4Endpoint& EndPt)
 {
 	int size = ArrayReaderPtr->Num();
-	ScreenMsg("Received bytes", size);
 
 	TArray<uint8> array;
 	uint8* simpleArray = ArrayReaderPtr->GetData();
@@ -96,6 +95,8 @@ void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIP
 			int intVal = FCString::Atoi(*xVal);
 			if (intVal > 100 || intVal < -100) {
 				float val = intVal / 350.f;
+				ScreenMsg("Received", val);
+
 				MoveRight(val);
 			}
 		}

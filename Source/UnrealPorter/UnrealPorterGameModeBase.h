@@ -14,7 +14,5 @@ class UNREALPORTER_API AUnrealPorterGameModeBase : public AGameMode
 	GENERATED_BODY()
 	
 public:
-		
-	AUnrealPorterGameModeBase();
-	
+			
 };
