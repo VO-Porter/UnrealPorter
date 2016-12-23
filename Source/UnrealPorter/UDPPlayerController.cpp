@@ -91,10 +91,8 @@ void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIP
 	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonRaw);
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
 	{
-		FString xVal = JsonParsed->GetStringField("x");
-		FString jumpVal = JsonParsed->GetStringField("jump");
-
-		if (xVal != "") {
+		if (JsonParsed->HasField("x")) {
+			FString xVal = JsonParsed->GetStringField("x");
 			int intVal = FCString::Atoi(*xVal);
 			if (intVal > 100 || intVal < -100) {
 				float val = intVal / 350.f;
@@ -102,7 +100,7 @@ void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIP
 			}
 		}
 		
-		if (jumpVal == "1") {
+		if (JsonParsed->HasField("jump")) {
 			Jump();
 		}
 	}

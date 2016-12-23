@@ -4,7 +4,3 @@
 #include "UnrealPorterGameModeBase.h"
 
 
-AUnrealPorterGameModeBase::AUnrealPorterGameModeBase()
-{
-}
-
