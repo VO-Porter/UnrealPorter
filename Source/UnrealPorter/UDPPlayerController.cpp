@@ -15,7 +15,7 @@ void AUDPPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StartUDPReceiver("UDPSocketListener", "127.0.0.1", 8890);
+	StartUDPReceiver("UDPSocketListener", "192.168.150.104", 8890);
 }
 
 
@@ -49,7 +49,7 @@ bool AUDPPlayerController::StartUDPReceiver(
 	const int32 ThePort
 ) {
 
-	ScreenMsg("RECEIVER INIT");
+	//ScreenMsg("RECEIVER INIT");
 
 	//~~~
 
@@ -93,11 +93,15 @@ void AUDPPlayerController::Recv(const FArrayReaderPtr& ArrayReaderPtr, const FIP
 		if (JsonParsed->HasField("x")) {
 			FString xVal = JsonParsed->GetStringField("x");
 			int intVal = FCString::Atoi(*xVal);
-			if (intVal > 100 || intVal < -100) {
-				float val = intVal / 350.f;
-				ScreenMsg("Received", val);
+			if (intVal > 50 || intVal < -50) {
+				float val = (intVal - 50) / 300.f;
+				//ScreenMsg("Received", val);
 
 				MoveRight(val);
+			}
+			else
+			{
+				MoveRight(0);
 			}
 		}
 		
