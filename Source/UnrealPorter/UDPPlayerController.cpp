@@ -15,7 +15,7 @@ void AUDPPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	StartUDPReceiver("UDPSocketListener", "10.129.47.54", 8890);
+	StartUDPReceiver("UDPSocketListener", "127.0.0.1", 8890);
 }
 
 
